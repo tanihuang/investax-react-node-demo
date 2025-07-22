@@ -35,7 +35,6 @@ const Login = () => {
   
   // Extract role from location state or default to user
   const role = location.state?.role || "user";
-  const from = location.state?.from || "/";
 
   /**
    * Effect hook to check for existing authentication
