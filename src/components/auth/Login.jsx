@@ -71,17 +71,24 @@ const Login = () => {
     try {
       // Simulate network latency for realistic UX
       await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Get stored users from localStorage or initialize with default users
-      const storedUsers = JSON.parse(localStorage.getItem('users') || JSON.stringify([
-        { email: 'admin@example.com', password: 'password123', role: 'admin', userId: 'admin-123' },
-        { email: 'user@example.com', password: 'password123', role: 'user', userId: 'user-456' }
-      ]));
-      
+
       // Find matching user
-      const user = storedUsers.find(u => u.email === email && u.password === password);
-      
-      if (user) {
+      const response = await fetch("http://ec2-13-115-241-205.ap-northeast-1.compute.amazonaws.com:3000/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Login error:", errorData);
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const result = await response.json();
+
+      if (result) {
+        const { user } = result;
         // User found, proceed with login
         const mockToken = `mock-token-${Date.now()}`;
         
@@ -94,7 +101,8 @@ const Login = () => {
         // Create log entry for admin tracking
         const logData = {
           userId: user.userId,
-          username: email,
+          username: user.username,
+          email: user.email,
           role: user.role,
           action: "login",
           loginTime: new Date().toISOString(),
@@ -111,9 +119,9 @@ const Login = () => {
         
         // Update authentication context
         login(email);
-        
+
         // Navigate to appropriate dashboard or requested page
-        navigate(from !== "/" ? from : (user.role === "admin" ? "/admin/dashboard" : "/user/dashboard"));
+        navigate(user.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
       } else {
         // Invalid credentials
         setError("Invalid email or password");
@@ -131,7 +139,7 @@ const Login = () => {
       <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md transform transition duration-300 hover:scale-105">
         {/* Header */}
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-          {role === "admin" ? "Admin Login" : "User Loginzz"}
+          {role === "admin" ? "Admin Login" : "User Login"}
         </h2>
 
         {/* Error display with animation */}

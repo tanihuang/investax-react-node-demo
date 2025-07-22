@@ -165,17 +165,24 @@ const Signup = () => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
       // Get existing users from localStorage or initialize with default users
-      const storedUsers = JSON.parse(localStorage.getItem('users') || JSON.stringify([
-        { email: 'admin@example.com', password: 'password123', role: 'admin', userId: 'admin-123' },
-        { email: 'user@example.com', password: 'password123', role: 'user', userId: 'user-456' }
-      ]));
-      
-      // Check if email already exists
-      if (storedUsers.some(user => user.email === formData.email)) {
-        setError("Email already in use");
-        setLoading(false);
-        return;
-      }
+      const response = await fetch("http://ec2-13-115-241-205.ap-northeast-1.compute.amazonaws.com:3000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          role: role,
+          // userId: `user-${Date.now()}`,
+          // createdAt: new Date().toISOString()
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('errorData', errorData.message);
+        throw new Error(errorData.message || "Signup failed");
+      }   
       
       // Create new user object
       const newUser = {
@@ -188,8 +195,8 @@ const Signup = () => {
       };
       
       // Add to stored users
-      storedUsers.push(newUser);
-      localStorage.setItem('users', JSON.stringify(storedUsers));
+      // storedUsers.push(newUser);
+      // localStorage.setItem('users', JSON.stringify(storedUsers));
       
       // Generate authentication token
       const mockToken = `mock-token-${Date.now()}`;
@@ -226,7 +233,7 @@ const Signup = () => {
       navigate(newUser.role === "admin" ? "/admin/dashboard" : "/user/dashboard");
     } catch (err) {
       console.error("Registration error:", err);
-      setError("Failed to create an account. Please try again.");
+      setError(err.message || "Failed to create an account. Please try again.");
     } finally {
       setLoading(false);
     }

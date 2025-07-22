@@ -23,6 +23,7 @@ import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import ForgotPassword from "./components/auth/ForgotPassword";
 import ResetPassword from "./components/auth/ResetPassword";
+import GuestDashboard from "./pages/GuestPages/Dashboard";
 
 // Admin Pages
 import Dashboard from "./pages/AdminPages/Dashboard";
@@ -106,6 +107,7 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/dashboard" element={<GuestDashboard />} /> 
                 
                 {/* Protected Admin Routes */}
                 <Route 
