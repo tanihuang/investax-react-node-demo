@@ -13,6 +13,7 @@ const UserPage = () => {
     deadline: "",
     progress: 0,
   });
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
     // ✅ Fetch logged-in user from localStorage
@@ -77,6 +78,7 @@ const UserPage = () => {
     <div className="flex min-h-screen bg-gray-100">
       <UserSidebar />
 
+      {/* Main Content */}
       <div className="flex-1 p-6">
         <h1 className="text-4xl font-bold mb-6 text-center w-full">
           <span>🎯</span> 
@@ -148,51 +150,67 @@ const UserPage = () => {
             </button>
           </form>
         </div>
-
+        <div className="mb-4">
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="p-2 border rounded-md"
+          >
+            <option value="all">All Tasks</option>
+            <option value="completed">Completed</option>
+            <option value="incomplete">Incomplete</option>
+          </select>
+        </div>
         {/* Task List */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tasks.length === 0 ? (
             <p className="text-gray-600">No tasks created yet. Start by adding a task!</p>
           ) : (
-            tasks.map((task) => (
-              <div key={task.id} className="bg-white shadow-md p-4 rounded-md border-l-4 border-blue-400">
-                <h3 className="text-lg font-semibold">{task.title}</h3>
-                <p className="text-gray-600">{task.description}</p>
+            tasks
+              .filter((task) => {
+                if (filterStatus === "completed") return task.status === "completed";
+                if (filterStatus === "incomplete") return task.status === "incomplete";
+                return true; // all
+              })
+              .map((task) => (
+                <div key={task.id} className="bg-white shadow-md p-4 rounded-md border-l-4 border-blue-400">
+                  <h3 className="text-lg font-semibold">{task.title}</h3>
+                  <p className="text-gray-600">{task.description}</p>
 
-                <span className={`text-sm ${getPriorityColor(task.priority)}`}>
-                  Priority: {task.priority}
-                </span>
+                  <span className={`text-sm ${getPriorityColor(task.priority)}`}>
+                    Priority: {task.priority}
+                  </span>
 
-                <p className="text-sm text-gray-700 mt-1">
-                  <span className="font-semibold">Assigned To:</span> {task.assignedTo}
-                </p>
+                  <p className="text-sm text-gray-700 mt-1">
+                    <span className="font-semibold">Assigned To:</span> {task.assignedTo}
+                  </p>
 
-                <p className="text-sm text-gray-700 mt-1">
-                  <span className="font-semibold">Deadline:</span> {task.deadline}
-                </p>
+                  <p className="text-sm text-gray-700 mt-1">
+                    <span className="font-semibold">Deadline:</span> {task.deadline}
+                  </p>
 
-                {/* Task Progress */}
-                <div className="mt-4">
-                  <label className="block text-sm font-medium text-gray-700">Progress:</label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={task.progress}
-                    onChange={(e) => updateProgress(task.id, e.target.value)}
-                    className="w-full mt-2 accent-blue-600"
-                  />
-                  <span className="text-sm font-medium text-gray-700">{task.progress}% Completed</span>
+                  {/* Task Progress */}
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-gray-700">Progress:</label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={task.progress}
+                      onChange={(e) => updateProgress(task.id, e.target.value)}
+                      className="w-full mt-2 accent-blue-600"
+                    />
+                    <span className="text-sm font-medium text-gray-700">{task.progress}% Completed</span>
+                  </div>
+
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => handleDeleteTask(task.id)}
+                    className="mt-4 w-full bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700 transition-all"
+                  >
+                    🗑️ Delete Task
+                  </button>
                 </div>
-
-                {/* Delete Button */}
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  className="mt-4 w-full bg-red-600 text-white p-2 rounded-lg font-semibold hover:bg-red-700 transition-all"
-                >
-                  🗑️ Delete Task
-                </button>
-              </div>
             ))
           )}
         </div>
